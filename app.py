@@ -10,32 +10,60 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── Custom CSS ────────────────────────────────────────────────────────────────
+# ── CSS ───────────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-    [data-testid="stAppViewContainer"] { background-color: #FAFFFE; }
-    [data-testid="stSidebar"] { background-color: #F1F8F1; }
-    .header-block { padding: 0.5rem 0 1rem 0; }
-    .header-title { font-size: 2rem; font-weight: 800; color: #1B5E20; margin: 0; }
-    .header-sub { font-size: 1rem; color: #555; margin: 0.25rem 0 0 0; }
-    .footer { color: #aaa; font-size: 0.78rem; text-align: center; padding: 1rem 0; }
-    div[data-testid="stMetric"] {
-        background: #F1F8F1;
-        border: 1px solid #C8E6C9;
-        border-radius: 10px;
-        padding: 0.6rem 1rem;
+    /* Force white background regardless of system theme */
+    html, body, [data-testid="stAppViewContainer"], [data-testid="stMain"] {
+        background-color: #FFFFFF !important;
+        color: #1A1A1A !important;
     }
+    [data-testid="stSidebar"] {
+        background-color: #F7FBF7 !important;
+        border-right: 1px solid #E0EDE0;
+    }
+    /* Header */
+    .page-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #1B5E20;
+        letter-spacing: -0.5px;
+        margin-bottom: 2px;
+    }
+    .page-sub {
+        font-size: 0.95rem;
+        color: #666;
+        margin-bottom: 0;
+    }
+    /* Metric cards */
+    [data-testid="stMetric"] {
+        background: #FFFFFF !important;
+        border: 1.5px solid #C8E6C9 !important;
+        border-radius: 10px !important;
+        padding: 14px 18px !important;
+    }
+    [data-testid="stMetricLabel"] { color: #555 !important; font-size: 0.8rem !important; }
+    [data-testid="stMetricValue"] { color: #1B5E20 !important; font-size: 1.8rem !important; font-weight: 700 !important; }
+    /* Sidebar labels */
+    [data-testid="stSidebar"] label { color: #333 !important; font-weight: 500 !important; }
+    [data-testid="stSidebar"] .stMultiSelect span { background-color: #E8F5E9 !important; color: #1B5E20 !important; }
+    /* Tab styling */
+    button[data-baseweb="tab"] { font-size: 0.9rem !important; }
+    /* Footer */
+    .footer { color: #999; font-size: 0.78rem; text-align: center; padding: 1.5rem 0 0.5rem 0; }
+    .footer a { color: #999; }
+    /* Divider */
+    hr { border-color: #E8F5E9 !important; margin: 0.8rem 0 !important; }
 </style>
 """, unsafe_allow_html=True)
 
 # ── Constants ─────────────────────────────────────────────────────────────────
-SHEET_ID = "1JE1NJ_5nMoiMTsQ7sTEmpLG_H3572pnCBXHelukTi9A"
+SHEET_ID  = "1JE1NJ_5nMoiMTsQ7sTEmpLG_H3572pnCBXHelukTi9A"
 SHEET_URL = (
     f"https://docs.google.com/spreadsheets/d/{SHEET_ID}"
     "/gviz/tq?tqx=out:csv&sheet=agtech_companies"
 )
-
-AU_STATES = {"VIC", "NSW", "QLD", "SA", "WA", "TAS", "NT", "ACT"}
+AU_STATES = {"VIC","NSW","QLD","SA","WA","TAS","NT","ACT"}
 
 CITY_COORDS = {
     "Sydney":       (-33.87, 151.21),
@@ -56,12 +84,6 @@ CITY_COORDS = {
     "Narrabri":     (-30.33, 149.78),
     "Osborne Park": (-31.90, 115.81),
     "Subiaco":      (-31.95, 115.83),
-    "Wollongong":   (-34.42, 150.89),
-    "Geelong":      (-38.15, 144.36),
-    "Townsville":   (-19.26, 146.82),
-    "Cairns":       (-16.92, 145.77),
-    "Ballarat":     (-37.56, 143.86),
-    # International (for non-AU companies)
     "Auckland":     (-36.85, 174.76),
     "Vancouver":    (49.28, -123.12),
     "Quebec":       (46.81, -71.21),
@@ -70,57 +92,43 @@ CITY_COORDS = {
 }
 
 SECTOR_COLORS = {
-    "cropping":    "#558B2F",
-    "livestock":   "#8D6E63",
-    "dairy":       "#29B6F6",
-    "horticulture":"#FF7043",
-    "aquaculture": "#26C6DA",
-    "mixed":       "#AB47BC",
-    "agnostic":    "#78909C",
+    "cropping":     "#558B2F",
+    "livestock":    "#8D6E63",
+    "dairy":        "#0288D1",
+    "horticulture": "#E64A19",
+    "aquaculture":  "#00838F",
+    "mixed":        "#6A1B9A",
+    "agnostic":     "#546E7A",
 }
 
 LABEL_MAP = {
-    # Sectors
-    "cropping": "Cropping", "livestock": "Livestock", "dairy": "Dairy",
-    "horticulture": "Horticulture", "aquaculture": "Aquaculture",
-    "mixed": "Mixed", "agnostic": "Agnostic",
-    # Problems
-    "precision_ag": "Precision Ag", "farm_finance": "Farm Finance",
-    "water_management": "Water Mgmt", "supply_chain": "Supply Chain",
-    "market_access": "Market Access", "sustainability_carbon": "Sustainability/Carbon",
-    "equipment_labour": "Equipment/Labour", "risk_insurance": "Risk/Insurance",
-    "crop_protection": "Crop Protection", "farm_management": "Farm Management",
-    # Funding
-    "bootstrapped": "Bootstrapped", "seed": "Seed", "series_a": "Series A",
-    "series_b": "Series B", "series_c_plus": "Series C+", "acquired": "Acquired",
-    "listed": "Listed", "government_funded": "Gov Funded", "unknown": "Unknown",
-    # Employee ranges
-    "1_10": "1–10", "11_50": "11–50", "51_200": "51–200",
-    "201_500": "201–500", "500_plus": "500+",
+    "cropping":"Cropping","livestock":"Livestock","dairy":"Dairy",
+    "horticulture":"Horticulture","aquaculture":"Aquaculture","mixed":"Mixed","agnostic":"Agnostic",
+    "precision_ag":"Precision Ag","farm_finance":"Farm Finance","water_management":"Water Management",
+    "supply_chain":"Supply Chain","market_access":"Market Access","sustainability_carbon":"Sustainability / Carbon",
+    "equipment_labour":"Equipment & Labour","risk_insurance":"Risk & Insurance",
+    "crop_protection":"Crop Protection","farm_management":"Farm Management",
+    "bootstrapped":"Bootstrapped","seed":"Seed","series_a":"Series A","series_b":"Series B",
+    "series_c_plus":"Series C+","acquired":"Acquired","listed":"Listed",
+    "government_funded":"Gov Funded","unknown":"Unknown",
+    "1_10":"1–10","11_50":"11–50","51_200":"51–200","201_500":"201–500","500_plus":"500+",
 }
 
-# ── Data loading ──────────────────────────────────────────────────────────────
+# ── Data ──────────────────────────────────────────────────────────────────────
 @st.cache_data(ttl=300)
 def load_data():
     try:
         df = pd.read_csv(SHEET_URL)
         df.columns = df.columns.str.strip()
-        # Derived fields
-        df["is_australian"] = df["hq_state"].isin(AU_STATES)
-        df["lat"] = df["hq_city"].map(
-            lambda c: CITY_COORDS.get(str(c).strip(), (None, None))[0]
-        )
-        df["lon"] = df["hq_city"].map(
-            lambda c: CITY_COORDS.get(str(c).strip(), (None, None))[1]
-        )
-        # Human-readable labels for display
-        df["sector_label"]  = df["farm_sector"].map(LABEL_MAP).fillna(df["farm_sector"])
-        df["problem_label"] = df["problem_solved"].map(LABEL_MAP).fillna(df["problem_solved"])
-        df["stage_label"]   = df["funding_stage"].map(LABEL_MAP).fillna(df["funding_stage"])
-        df["emp_label"]     = df["employee_count_range"].map(LABEL_MAP).fillna(df["employee_count_range"])
+        df["is_au"]   = df["hq_state"].isin(AU_STATES)
+        df["lat"]     = df["hq_city"].map(lambda c: CITY_COORDS.get(str(c).strip(),(None,None))[0])
+        df["lon"]     = df["hq_city"].map(lambda c: CITY_COORDS.get(str(c).strip(),(None,None))[1])
+        for col, new in [("farm_sector","sector_lbl"),("problem_solved","problem_lbl"),
+                         ("funding_stage","stage_lbl"),("employee_count_range","emp_lbl")]:
+            df[new] = df[col].map(LABEL_MAP).fillna(df[col])
         return df
     except Exception as e:
-        st.error(f"⚠️ Could not load data from Google Sheets. Make sure the sheet is shared publicly. Error: {e}")
+        st.error(f"Could not load sheet — make sure it's shared publicly. ({e})")
         return pd.DataFrame()
 
 df = load_data()
@@ -129,250 +137,207 @@ if df.empty:
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("## 🌾 Filters")
+    st.markdown("### 🌾 Filters")
+    show_non_au = st.toggle("Include non-AU companies", value=False)
+    pool = df if show_non_au else df[df["is_au"]]
 
-    show_non_au = st.toggle("Include non-AU HQ companies", value=False)
+    with st.expander("📍 State / Territory", expanded=True):
+        all_states = sorted(pool["hq_state"].dropna().unique())
+        sel_states = st.multiselect("", all_states, default=all_states, label_visibility="collapsed")
 
-    working = df[df["is_australian"]] if not show_non_au else df
+    with st.expander("🌾 Farm Sector", expanded=False):
+        all_sectors = sorted(pool["farm_sector"].dropna().unique())
+        sel_sectors = st.multiselect("", all_sectors, default=all_sectors,
+                                     format_func=lambda x: LABEL_MAP.get(x, x), label_visibility="collapsed")
 
-    all_states  = sorted(working["hq_state"].dropna().unique())
-    all_sectors = sorted(working["farm_sector"].dropna().unique())
-    all_problems = sorted(working["problem_solved"].dropna().unique())
-    all_stages  = sorted(working["funding_stage"].dropna().unique())
+    with st.expander("🔧 Problem Solved", expanded=False):
+        all_problems = sorted(pool["problem_solved"].dropna().unique())
+        sel_problems = st.multiselect("", all_problems, default=all_problems,
+                                      format_func=lambda x: LABEL_MAP.get(x, x), label_visibility="collapsed")
 
-    sel_states   = st.multiselect("State / Territory", all_states, default=all_states)
-    sel_sectors  = st.multiselect("Farm Sector", all_sectors, default=all_sectors,
-                                  format_func=lambda x: LABEL_MAP.get(x, x))
-    sel_problems = st.multiselect("Problem Solved", all_problems, default=all_problems,
-                                  format_func=lambda x: LABEL_MAP.get(x, x))
-    sel_stages   = st.multiselect("Funding Stage", all_stages, default=all_stages,
-                                  format_func=lambda x: LABEL_MAP.get(x, x))
+    with st.expander("💰 Funding Stage", expanded=False):
+        all_stages = sorted(pool["funding_stage"].dropna().unique())
+        sel_stages = st.multiselect("", all_stages, default=all_stages,
+                                    format_func=lambda x: LABEL_MAP.get(x, x), label_visibility="collapsed")
 
     st.markdown("---")
-    st.caption("Data sourced from public records, Crunchbase & AgFunder.\nUpdated April 2026.")
+    st.caption("Data sourced from public records,\nCrunchbase & AgFunder. April 2026.")
 
-# ── Filter data ───────────────────────────────────────────────────────────────
-filtered = working.copy()
+# ── Filter ────────────────────────────────────────────────────────────────────
+f = pool.copy()
 if sel_states:
-    au_in_state   = filtered["is_australian"] & filtered["hq_state"].isin(sel_states)
-    non_au        = ~filtered["is_australian"]
-    filtered = filtered[au_in_state | (non_au if show_non_au else pd.Series(False, index=filtered.index))]
-if sel_sectors:
-    filtered = filtered[filtered["farm_sector"].isin(sel_sectors)]
-if sel_problems:
-    filtered = filtered[filtered["problem_solved"].isin(sel_problems)]
-if sel_stages:
-    filtered = filtered[filtered["funding_stage"].isin(sel_stages)]
+    au_ok   = f["is_au"] & f["hq_state"].isin(sel_states)
+    non_au  = ~f["is_au"]
+    f = f[au_ok | (non_au if show_non_au else pd.Series(False, index=f.index))]
+if sel_sectors:  f = f[f["farm_sector"].isin(sel_sectors)]
+if sel_problems: f = f[f["problem_solved"].isin(sel_problems)]
+if sel_stages:   f = f[f["funding_stage"].isin(sel_stages)]
 
 # ── Header ────────────────────────────────────────────────────────────────────
-st.markdown(
-    '<div class="header-block">'
-    '<p class="header-title">🌾 Australian Agtech Landscape Tracker</p>'
-    '<p class="header-sub">A live, searchable database of Australian agricultural technology companies '
-    '— tracking the ecosystem shaping the future of farming.</p>'
-    '</div>',
-    unsafe_allow_html=True,
-)
+st.markdown('<p class="page-title">Australian Agtech Landscape Tracker</p>', unsafe_allow_html=True)
+st.markdown('<p class="page-sub">A live, searchable database of Australian agricultural technology companies.</p>', unsafe_allow_html=True)
+st.markdown("---")
 
 # ── Metrics ───────────────────────────────────────────────────────────────────
-m1, m2, m3, m4 = st.columns(4)
-m1.metric("Companies Tracked", len(filtered))
-m2.metric("AU States / Territories", filtered[filtered["is_australian"]]["hq_state"].nunique())
-m3.metric("Farm Sectors", filtered["farm_sector"].nunique())
-m4.metric("Funding Stages", filtered["funding_stage"].nunique())
+c1, c2, c3, c4 = st.columns(4)
+c1.metric("Companies Tracked",     len(f))
+c2.metric("States / Territories",  f[f["is_au"]]["hq_state"].nunique())
+c3.metric("Farm Sectors",          f["farm_sector"].nunique())
+c4.metric("Funding Stages",        f["funding_stage"].nunique())
 
 st.markdown("---")
 
 # ── Tabs ──────────────────────────────────────────────────────────────────────
-tab_map, tab_table, tab_analytics = st.tabs(["🗺️  Map", "📋  Companies", "📊  Analytics"])
+tab_map, tab_table, tab_charts = st.tabs(["Map", "Companies", "Analytics"])
 
-# ════════════════════════════════════════════════════════════════════════════
-# MAP TAB
-# ════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════
+# MAP
+# ══════════════════════════════
 with tab_map:
-    map_df = filtered[filtered["lat"].notna() & filtered["lon"].notna()].copy()
+    map_df = f[f["lat"].notna() & f["lon"].notna()].copy()
 
     if map_df.empty:
-        st.info("No companies with known locations match your filters.")
+        st.info("No companies with mapped locations match the current filters.")
     else:
-        # Determine map centre — zoom on AU unless non-AU toggled
-        if not show_non_au or filtered["is_australian"].all():
-            centre = {"lat": -27.0, "lon": 134.0}
-            zoom = 3.2
-        else:
-            centre = {"lat": -20.0, "lon": 140.0}
-            zoom = 1.5
-
-        fig_map = px.scatter_mapbox(
+        fig = px.scatter_geo(
             map_df,
-            lat="lat",
-            lon="lon",
+            lat="lat", lon="lon",
             color="farm_sector",
             color_discrete_map=SECTOR_COLORS,
             hover_name="company_name",
             hover_data={
-                "hq_city":        True,
-                "hq_state":       True,
-                "problem_label":  True,
-                "stage_label":    True,
-                "emp_label":      True,
-                "lat":            False,
-                "lon":            False,
-                "farm_sector":    False,
+                "hq_city":      True,
+                "hq_state":     True,
+                "problem_lbl":  True,
+                "stage_lbl":    True,
+                "emp_lbl":      True,
+                "lat": False, "lon": False, "farm_sector": False,
             },
             labels={
-                "problem_label": "Problem",
-                "stage_label":   "Funding",
-                "emp_label":     "Employees",
-                "farm_sector":   "Sector",
+                "problem_lbl":"Problem","stage_lbl":"Funding",
+                "emp_lbl":"Employees","farm_sector":"Sector",
             },
-            zoom=zoom,
-            center=centre,
-            mapbox_style="open-street-map",
-            size_max=14,
         )
-        fig_map.update_traces(marker=dict(size=12, opacity=0.85))
-        fig_map.update_layout(
-            height=540,
+        fig.update_traces(marker=dict(size=10, opacity=0.85, line=dict(width=0.5, color="white")))
+        fig.update_geos(
+            showcountries=True,   countrycolor="#CCCCCC",
+            showcoastlines=True,  coastlinecolor="#CCCCCC",
+            showland=True,        landcolor="#F9F9F9",
+            showocean=True,       oceancolor="#EBF5FB",
+            showlakes=True,       lakecolor="#EBF5FB",
+            lataxis_range=[-45, -8],
+            lonaxis_range=[108, 158],
+        )
+        fig.update_layout(
+            height=520,
             margin=dict(l=0, r=0, t=0, b=0),
             legend=dict(
-                title="Farm Sector",
-                bgcolor="rgba(255,255,255,0.85)",
-                bordercolor="#C8E6C9",
-                borderwidth=1,
+                title="Sector", orientation="v",
+                bgcolor="rgba(255,255,255,0.9)",
+                bordercolor="#C8E6C9", borderwidth=1,
             ),
+            paper_bgcolor="white",
+            geo_bgcolor="white",
         )
-        st.plotly_chart(fig_map, use_container_width=True)
-        st.caption(f"Showing {len(map_df)} of {len(filtered)} companies with mapped locations.")
+        st.plotly_chart(fig, use_container_width=True)
+        st.caption(f"Showing {len(map_df)} of {len(f)} companies with known locations.")
 
-# ════════════════════════════════════════════════════════════════════════════
-# COMPANIES TABLE TAB
-# ════════════════════════════════════════════════════════════════════════════
+# ══════════════════════════════
+# TABLE
+# ══════════════════════════════
 with tab_table:
-    col_search, col_count = st.columns([3, 1])
-    with col_search:
-        search = st.text_input("🔍 Search company name or description", placeholder="e.g. carbon, irrigation, livestock...")
-    with col_count:
-        st.markdown(f"<br><b>{len(filtered)} companies</b>", unsafe_allow_html=True)
+    col_s, col_n = st.columns([3, 1])
+    with col_s:
+        search = st.text_input("🔍 Search", placeholder="company name or description...", label_visibility="collapsed")
+    with col_n:
+        st.markdown(f"<p style='padding-top:8px; color:#555;'><b>{len(f)}</b> companies</p>", unsafe_allow_html=True)
 
-    display = filtered.copy()
+    tdf = f.copy()
     if search.strip():
         mask = (
-            display["company_name"].str.contains(search, case=False, na=False) |
-            display["short_description"].str.contains(search, case=False, na=False)
+            tdf["company_name"].str.contains(search, case=False, na=False) |
+            tdf["short_description"].str.contains(search, case=False, na=False)
         )
-        display = display[mask]
+        tdf = tdf[mask]
 
-    show_cols = {
-        "company_name":         "Company",
-        "hq_city":              "City",
-        "hq_state":             "State",
-        "sector_label":         "Sector",
-        "problem_label":        "Problem Solved",
-        "stage_label":          "Funding Stage",
-        "emp_label":            "Employees",
-        "short_description":    "Description",
-        "website":              "Website",
+    col_map = {
+        "company_name":"Company","hq_city":"City","hq_state":"State",
+        "sector_lbl":"Sector","problem_lbl":"Problem Solved",
+        "stage_lbl":"Funding","emp_lbl":"Employees",
+        "short_description":"Description","website":"Website",
     }
-    available = {k: v for k, v in show_cols.items() if k in display.columns}
-    display_out = display[list(available.keys())].rename(columns=available)
+    out_cols = {k: v for k, v in col_map.items() if k in tdf.columns}
+    out = tdf[list(out_cols.keys())].rename(columns=out_cols)
 
     st.dataframe(
-        display_out,
-        use_container_width=True,
-        height=480,
+        out, use_container_width=True, height=460, hide_index=True,
         column_config={
-            "Website": st.column_config.LinkColumn("Website"),
+            "Website":     st.column_config.LinkColumn("Website"),
             "Description": st.column_config.TextColumn("Description", width="large"),
         },
-        hide_index=True,
     )
 
-# ════════════════════════════════════════════════════════════════════════════
-# ANALYTICS TAB
-# ════════════════════════════════════════════════════════════════════════════
-with tab_analytics:
-    col_l, col_r = st.columns(2)
+# ══════════════════════════════
+# ANALYTICS
+# ══════════════════════════════
+with tab_charts:
+    cl, cr = st.columns(2)
 
-    # ── Sector bar ────────────────────────────────────────────────────────
-    with col_l:
-        sector_counts = (
-            filtered["farm_sector"]
-            .value_counts()
-            .reset_index()
-            .rename(columns={"farm_sector": "Sector", "count": "Count"})
-        )
-        sector_counts["Sector"] = sector_counts["Sector"].map(LABEL_MAP).fillna(sector_counts["Sector"])
-        fig_sector = px.bar(
-            sector_counts, x="Count", y="Sector", orientation="h",
-            color="Sector",
-            color_discrete_map={LABEL_MAP.get(k, k): v for k, v in SECTOR_COLORS.items()},
-            title="Companies by Farm Sector",
-        )
-        fig_sector.update_layout(showlegend=False, height=320, margin=dict(l=0, r=10, t=40, b=0))
-        st.plotly_chart(fig_sector, use_container_width=True)
+    with cl:
+        sc = f["sector_lbl"].value_counts().reset_index()
+        sc.columns = ["Sector","Count"]
+        fig_s = px.bar(sc, x="Count", y="Sector", orientation="h",
+                       color="Sector",
+                       color_discrete_map={LABEL_MAP.get(k,k): v for k,v in SECTOR_COLORS.items()},
+                       title="Companies by Farm Sector")
+        fig_s.update_layout(showlegend=False, height=320, margin=dict(l=0,r=10,t=40,b=0),
+                            plot_bgcolor="white", paper_bgcolor="white")
+        fig_s.update_xaxes(showgrid=True, gridcolor="#F0F0F0")
+        fig_s.update_yaxes(showgrid=False)
+        st.plotly_chart(fig_s, use_container_width=True)
 
-    # ── Funding stage pie ─────────────────────────────────────────────────
-    with col_r:
-        stage_counts = (
-            filtered["stage_label"]
-            .value_counts()
-            .reset_index()
-            .rename(columns={"stage_label": "Stage", "count": "Count"})
-        )
-        fig_stage = px.pie(
-            stage_counts, values="Count", names="Stage",
-            title="Funding Stage Distribution",
-            color_discrete_sequence=px.colors.qualitative.Set2,
-            hole=0.35,
-        )
-        fig_stage.update_layout(height=320, margin=dict(l=0, r=0, t=40, b=0))
-        fig_stage.update_traces(textposition="inside", textinfo="percent+label")
-        st.plotly_chart(fig_stage, use_container_width=True)
+    with cr:
+        stg = f["stage_lbl"].value_counts().reset_index()
+        stg.columns = ["Stage","Count"]
+        fig_stg = px.pie(stg, values="Count", names="Stage", hole=0.4,
+                         title="Funding Stage Distribution",
+                         color_discrete_sequence=px.colors.qualitative.Set2)
+        fig_stg.update_layout(height=320, margin=dict(l=0,r=0,t=40,b=0),
+                               paper_bgcolor="white")
+        fig_stg.update_traces(textposition="inside", textinfo="percent+label")
+        st.plotly_chart(fig_stg, use_container_width=True)
 
-    col_l2, col_r2 = st.columns(2)
+    cl2, cr2 = st.columns(2)
 
-    # ── State bar ─────────────────────────────────────────────────────────
-    with col_l2:
-        au_only = filtered[filtered["is_australian"]]
-        state_counts = (
-            au_only["hq_state"]
-            .value_counts()
-            .reset_index()
-            .rename(columns={"hq_state": "State", "count": "Count"})
-        )
-        fig_state = px.bar(
-            state_counts, x="State", y="Count",
-            color_discrete_sequence=["#2E7D32"],
-            title="AU Companies by State",
-        )
-        fig_state.update_layout(showlegend=False, height=300, margin=dict(l=0, r=0, t=40, b=0))
-        st.plotly_chart(fig_state, use_container_width=True)
+    with cl2:
+        au = f[f["is_au"]]
+        stc = au["hq_state"].value_counts().reset_index()
+        stc.columns = ["State","Count"]
+        fig_st = px.bar(stc, x="State", y="Count", title="AU Companies by State",
+                        color_discrete_sequence=["#2E7D32"])
+        fig_st.update_layout(showlegend=False, height=300, margin=dict(l=0,r=0,t=40,b=0),
+                              plot_bgcolor="white", paper_bgcolor="white")
+        fig_st.update_yaxes(showgrid=True, gridcolor="#F0F0F0")
+        fig_st.update_xaxes(showgrid=False)
+        st.plotly_chart(fig_st, use_container_width=True)
 
-    # ── Problem solved bar ────────────────────────────────────────────────
-    with col_r2:
-        prob_counts = (
-            filtered["problem_label"]
-            .value_counts()
-            .reset_index()
-            .rename(columns={"problem_label": "Problem", "count": "Count"})
-        )
-        fig_prob = px.bar(
-            prob_counts, x="Count", y="Problem", orientation="h",
-            color_discrete_sequence=["#388E3C"],
-            title="Problems Being Solved",
-        )
-        fig_prob.update_layout(showlegend=False, height=300, margin=dict(l=0, r=10, t=40, b=0))
-        st.plotly_chart(fig_prob, use_container_width=True)
+    with cr2:
+        pc = f["problem_lbl"].value_counts().reset_index()
+        pc.columns = ["Problem","Count"]
+        fig_p = px.bar(pc, x="Count", y="Problem", orientation="h",
+                       title="Problems Being Solved",
+                       color_discrete_sequence=["#388E3C"])
+        fig_p.update_layout(showlegend=False, height=300, margin=dict(l=0,r=10,t=40,b=0),
+                             plot_bgcolor="white", paper_bgcolor="white")
+        fig_p.update_xaxes(showgrid=True, gridcolor="#F0F0F0")
+        fig_p.update_yaxes(showgrid=False)
+        st.plotly_chart(fig_p, use_container_width=True)
 
 # ── Footer ────────────────────────────────────────────────────────────────────
 st.markdown("---")
 st.markdown(
-    '<div class="footer">'
-    "Built by Justin Moriarty &nbsp;·&nbsp; "
-    "Data sourced from public records, Crunchbase & AgFunder &nbsp;·&nbsp; "
-    "Updated April 2026 &nbsp;·&nbsp; "
-    "<a href='https://github.com/YOUR_GITHUB/agtech-tracker' style='color:#aaa;'>GitHub</a>"
-    "</div>",
+    '<div class="footer">Built by Justin Moriarty &nbsp;·&nbsp; '
+    'Data from public records, Crunchbase & AgFunder &nbsp;·&nbsp; Updated April 2026 &nbsp;·&nbsp; '
+    '<a href="https://github.com/justin2268/agtech-tracker">GitHub</a></div>',
     unsafe_allow_html=True,
 )
